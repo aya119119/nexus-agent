@@ -6,6 +6,8 @@ A tool-using AI agent with persistent memory, built from scratch.
 
 - Agent loop: ✅
 - Web search tool: ✅
+- File I/O tool: ✅
+- Calculator tool: ✅
 - Memory: 🔜
 - UI: 🔜
 - Deployment: 🔜
@@ -41,6 +43,13 @@ python scripts/chat.py
 ## How the tool loop works
 
 The agent begins with a normal user message and sends it to Anthropic with the available tool schemas. If the model decides it needs a tool, the loop captures the tool call, executes it locally, and sends the tool result back to the model as a fresh user message. This pattern — observe, act, reflect — is the essence of a ReAct loop. It keeps the reasoning process grounded in real, executable actions instead of relying on the model to invent answers from memory alone.
+
+## Adding a new tool
+
+1. Create a new Tool subclass in the tools package.
+2. Give it a unique name, description, and JSON schema that matches the Anthropic tool format.
+3. Implement run(**kwargs) with any validation and safety checks inside the tool itself.
+4. Add one registry entry in tools/__init__.py and the agent can use it immediately without any other code changes.
 
 ## Why this project
 
