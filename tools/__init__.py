@@ -1,15 +1,21 @@
 """Tool registry and execution helpers.
 
-This is intentionally simple: future tools can be added by creating a new Tool
-subclass and registering it in the registry below.
+The design stays generic: each new tool is a Tool subclass and a single registry
+entry. The agent core only calls get_tool_schemas() and execute_tool().
 """
 from typing import Dict
 
 from tools.base import Tool
+from tools.calculator import CalculatorTool
+from tools.file_io import FileReadTool, FileWriteTool
 from tools.web_search import WebSearchTool
 
+# Register tools in one place only; adding a new tool is one line here.
 registry: Dict[str, Tool] = {
     WebSearchTool.name: WebSearchTool(),
+    FileReadTool.name: FileReadTool(),
+    FileWriteTool.name: FileWriteTool(),
+    CalculatorTool.name: CalculatorTool(),
 }
 
 
