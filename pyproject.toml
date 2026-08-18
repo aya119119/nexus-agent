@@ -8,8 +8,9 @@ authors = ["Your Name <you@example.com>"]
 python = ">=3.10"
 anthropic = "*"
 python-dotenv = "*"
+requests = "*"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "*"
 
 [build-system]

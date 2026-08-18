@@ -14,6 +14,7 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 MODEL_NAME = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929")
 SANDBOX_DIR = Path(__file__).resolve().parent.parent / "agent_workspace"
 SANDBOX_DIR.mkdir(parents=True, exist_ok=True)
+DB_PATH = SANDBOX_DIR / "conversations.db"
 
 
 def get_anthropic_api_key() -> str:

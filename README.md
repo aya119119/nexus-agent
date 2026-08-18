@@ -8,7 +8,7 @@ A tool-using AI agent with persistent memory, built from scratch.
 - Web search tool: ✅
 - File I/O tool: ✅
 - Calculator tool: ✅
-- Memory: 🔜
+- Conversation persistence: ✅
 - UI: 🔜
 - Deployment: 🔜
 
@@ -39,6 +39,10 @@ cp .env.example .env
 ```bash
 python scripts/chat.py
 ```
+
+## Resuming a session
+
+When the CLI starts, it shows any saved sessions and lets you resume one by number or session ID. Press Enter or type `new` to start a new conversation. The active session ID is printed at startup, and you can use that value later to continue the same chat history without losing earlier context.
 
 ## How the tool loop works
 

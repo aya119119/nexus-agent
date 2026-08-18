@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 
 from anthropic import Anthropic
 
+from memory.db import create_session, load_messages, save_message, update_session_title
 from . import config
 from tools import execute_tool, get_tool_schemas
 
@@ -15,10 +16,18 @@ from tools import execute_tool, get_tool_schemas
 class Agent:
     """Minimal ReAct-style agent with a tool-using loop."""
 
-    def __init__(self):
+    def __init__(self, session_id: str | None = None):
         self.client = Anthropic(api_key=config.get_anthropic_api_key())
         self.model = config.get_model_name()
         self.messages: List[Dict[str, Any]] = []
+        self.session_id = session_id or create_session(title="Untitled")
+
+        if session_id is not None:
+            self.messages = load_messages(session_id)
+
+    def _persist_message(self, role: str, content: Any) -> None:
+        """Persist a message immediately so a crash does not lose the session history."""
+        save_message(self.session_id, role, content)
 
     def _to_anthropic_messages(self) -> List[Dict[str, Any]]:
         """Convert our internal message history to Anthropic's message format."""
@@ -56,6 +65,12 @@ class Agent:
     def chat(self, user_message: str) -> str:
         """Send a user message and continue until the model produces a final answer."""
         self.messages.append({"role": "user", "content": user_message})
+        self._persist_message("user", user_message)
+
+        if len(self.messages) == 1:
+            first_title = user_message[:40].strip()
+            if first_title:
+                update_session_title(self.session_id, first_title)
 
         for _ in range(5):
             anthropic_messages = self._to_anthropic_messages()
@@ -76,12 +91,11 @@ class Agent:
                 if not tool_calls:
                     break
 
-                # Keep the tool call visible in the CLI so the reasoning loop stays inspectable.
                 for tool_call in tool_calls:
                     print(f"Tool call: {tool_call['name']} | input={tool_call.get('input', {})}")
 
-                # Store the assistant's tool call before we send back the tool result.
                 self.messages.append({"role": "assistant", "content": tool_calls})
+                self._persist_message("assistant", tool_calls)
 
                 tool_results = []
                 for tool_call in tool_calls:
@@ -96,13 +110,14 @@ class Agent:
                         }
                     )
 
-                # Anthropic expects tool results to come back as a user message.
                 self.messages.append({"role": "user", "content": tool_results})
+                self._persist_message("user", tool_results)
                 continue
 
             assistant_text = self._extract_text(response)
             if assistant_text:
                 self.messages.append({"role": "assistant", "content": assistant_text})
+                self._persist_message("assistant", assistant_text)
                 return assistant_text
 
             return "No response received."
